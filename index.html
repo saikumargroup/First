@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <style>
+    circle{
+      fill:white;
+      stroke:red;
+      stroke-width:5px;
+      }
+    </style>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>array to tree</title>
+    <script src="https://unpkg.com/d3@6.6.0/dist/d3.min.js"></script>
+  </head>
+  <body>
+    <svg width="960" height="500"><g></g></svg>
+    <script>
+      a = [...Array(10).keys()].sort(function() { return 0.5 - Math.random() })
+      var k = (a)=>a.map((x,i)=>{return {id:i,pid:Math.ceil(i/2)-1>=0?Math.ceil(i/2)-1:"",value:x}})
+      y = k(a)
+      var data = y;
+      var render = (data)=>{
+      var ds = d3
+        .stratify()
+        .id((d) => d.id)
+        .parentId((d) => d.pid)(data);
+      var ts = d3.tree().size([600, 300]);
+      var information = ts(ds);
+       var connections = d3
+        .select('g')
+        .attr('transform', `translate(0,${100})`)
+       .selectAll('path')
+        .data(information.links());
+      connections
+        .enter()
+        .append('path')
+        .merge(connections)
+        .attr(
+          'd',
+          (d) =>
+            `M ${d.source.x}, ${d.source.y} L ${d.source.x}, ${d.source.y} `
+        )
+       .attr(
+          'd',
+          (d) =>
+            `M ${d.source.x}, ${d.source.y} L ${d.target.x}, ${d.target.y} `
+        )
+        .attr('stroke', 'black');
+      var circles = d3
+      .select('g')
+        .selectAll('circle')
+        .data(information.descendants());
+      circles
+        .enter()
+        .append('circle')
+        .merge(circles)
+       	.attr('cx', (d) => d.x)
+        .attr('cy', (d) => d.y)
+        .attr('r', 30);
+      var texts = d3
+      .select('g')
+        .selectAll('text')
+        .data(information.descendants());
+      texts
+        .enter()
+        .append('text')
+        .merge(texts)
+        .attr('x', (d) => d.x)
+        .attr('y', (d) => d.y)
+        .transition().duration(d=> 100 + d.depth*1000)
+        .text(d=>d.data.value)
+      	.attr('dy','0.32em')
+      	.attr('dx','-0.72em');
+      }
+      render(data);
+	
+    </script>
+  </body>
+</html>
